@@ -35,6 +35,7 @@ func Handler(spotifyAuthService spotify.AuthService) http.Handler {
 	api.HandleFunc("/spotify/callback", loginCallback(spotifyAuthService)).Methods(http.MethodGet)
 	api.HandleFunc("/spotify/recently_played", getRecentlyPlayed(spotifyAuthService)).Methods(http.MethodGet)
 	api.HandleFunc("/spotify/audio_features", getAudioFeatures(spotifyAuthService)).Methods(http.MethodGet)
+	api.HandleFunc("/spotify/top", getTops(spotifyAuthService)).Methods(http.MethodGet)
 	return r
 }
 
@@ -132,6 +133,28 @@ func getAudioFeatures(authService spotify.AuthService) func(w http.ResponseWrite
 		email := r.URL.Query().Get("email")
 		trackIDsArray := strings.Split(trackIDs, ",")
 		resp, err := authService.GetTracksAudioFeatures(email, trackIDsArray)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		w.Write(*resp)
+	}
+}
+
+func getTops(authService spotify.AuthService) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		email := r.URL.Query().Get("email")
+		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+		if err != nil {
+			limit = 10
+		}
+		offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+		if err != nil {
+			offset = 0
+		}
+		timeRange := r.URL.Query().Get("time_range")
+		topType := r.URL.Query().Get("type")
+
+		resp, err := authService.GetTopArtistsOrTracks(email, topType, timeRange, limit, offset)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

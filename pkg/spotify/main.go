@@ -23,6 +23,7 @@ type AuthService interface {
 	GetRecentlyPlayed(email string, limit int, before string, after string) (*[]byte, error)
 	GetTracksAudioFeatures(email string, trackIDs []string) (*[]byte, error)
 	GetValidToken(email string) (*Credentials, error)
+	GetTopArtistsOrTracks(email string, top string, timeRange string, limit int, offset int) (*[]byte, error)
 }
 
 type Service struct {

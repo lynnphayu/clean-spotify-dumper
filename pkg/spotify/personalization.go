@@ -1,9 +1,33 @@
 package spotify
 
 import (
+	"errors"
 	"io/ioutil"
+	"os"
 	"strconv"
 )
+
+func TopQueryValidator(e string, paramType string) (string, error) {
+	topType := [...]string{"tracks", "artists"}
+	timeRange := [...]string{"short_term", "medium_term", "long_term"}
+	switch paramType {
+	case "type":
+		for _, v := range topType {
+			if v == e {
+				return e, nil
+			}
+		}
+		return "tracks", nil
+	case "time_range":
+		for _, v := range timeRange {
+			if v == e {
+				return e, nil
+			}
+			return "medium_term", nil
+		}
+	}
+	return "", errors.New("Incorrect Format Parameter")
+}
 
 func (service *Service) GetRecentlyPlayed(
 	email string, limit int,
@@ -40,4 +64,41 @@ func (service *Service) GetRecentlyPlayed(
 		return nil, err
 	}
 	return &recentlyPlayed, nil
+}
+
+func (service *Service) GetTopArtistsOrTracks(email string,
+	top string,
+	timeRangeStr string,
+	limit int,
+	offset int) (*[]byte, error) {
+	credentials, err := service.GetValidToken(email)
+	if err != nil {
+		return nil, err
+	}
+	toptype, err := TopQueryValidator(top, "type")
+	timeRange, err := TopQueryValidator(timeRangeStr, "time_range")
+	if err != nil {
+		return nil, err
+	}
+	URL := os.Getenv("SPOTIFY_PERSONAL_TOP") + "/" + toptype +
+		"?limit=" + strconv.Itoa(limit) +
+		"&offset=" + strconv.Itoa(offset) +
+		"&time_range=" + timeRange
+	topResp, err := service.httpClient.Request(
+		"GET",
+		URL,
+		nil,
+		"application/json",
+		"Bearer "+credentials.AccessToken,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer topResp.Body.Close()
+
+	topContainer, err := ioutil.ReadAll(topResp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return &topContainer, nil
 }
