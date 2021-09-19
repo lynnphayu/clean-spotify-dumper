@@ -1,4 +1,4 @@
-package endpoint
+package transport
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"utilserver/pkg/spotify"
+	"utilserver/profile/domain"
 
 	"github.com/gorilla/mux"
 )
@@ -27,7 +27,7 @@ func clearCookie(w *http.ResponseWriter) {
 }
 
 // Handler - spotify authentication routes handler
-func Handler(spotifyAuthService spotify.AuthService) http.Handler {
+func Handler(spotifyAuthService domain.ProfileService) http.Handler {
 	r := mux.NewRouter()
 	api := r.PathPrefix("/api/v1").Subrouter()
 
@@ -39,7 +39,7 @@ func Handler(spotifyAuthService spotify.AuthService) http.Handler {
 	return r
 }
 
-func login(authService spotify.AuthService) func(w http.ResponseWriter, r *http.Request) {
+func login(authService domain.ProfileService) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		base, err := url.Parse(os.Getenv("SPOTIFY_LOGIN_ENDPOINT"))
 		if err != nil {
@@ -74,7 +74,7 @@ func login(authService spotify.AuthService) func(w http.ResponseWriter, r *http.
 	}
 }
 
-func loginCallback(authService spotify.AuthService) func(w http.ResponseWriter, r *http.Request) {
+func loginCallback(authService domain.ProfileService) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
 		state := r.URL.Query().Get("state")
@@ -100,7 +100,7 @@ func loginCallback(authService spotify.AuthService) func(w http.ResponseWriter, 
 	}
 }
 
-func getRecentlyPlayed(authService spotify.AuthService) func(w http.ResponseWriter, r *http.Request) {
+func getRecentlyPlayed(authService domain.ProfileService) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		email := r.URL.Query().Get("email")
 		limit := r.URL.Query().Get("limit")
@@ -127,7 +127,7 @@ func getRecentlyPlayed(authService spotify.AuthService) func(w http.ResponseWrit
 	}
 }
 
-func getAudioFeatures(authService spotify.AuthService) func(w http.ResponseWriter, r *http.Request) {
+func getAudioFeatures(authService domain.ProfileService) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		trackIDs := r.URL.Query().Get("ids")
 		email := r.URL.Query().Get("email")
@@ -140,7 +140,7 @@ func getAudioFeatures(authService spotify.AuthService) func(w http.ResponseWrite
 	}
 }
 
-func getTops(authService spotify.AuthService) func(w http.ResponseWriter, r *http.Request) {
+func getTops(authService domain.ProfileService) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		email := r.URL.Query().Get("email")
 		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
@@ -157,6 +157,7 @@ func getTops(authService spotify.AuthService) func(w http.ResponseWriter, r *htt
 		resp, err := authService.GetTopArtistsOrTracks(email, topType, timeRange, limit, offset)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		w.Write(*resp)
 	}

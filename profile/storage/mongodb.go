@@ -5,7 +5,7 @@ import (
 	"os"
 	"sync"
 	"time"
-	"utilserver/pkg/spotify"
+	"utilserver/profile/domain"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -62,8 +62,8 @@ func (storage *Storage) GetDBClient(CONNECTIONSTRING string) (*mongo.Client, err
 	return instance, instanceError
 }
 
-func (storage *Storage) GetProfileWithEmail(email string) (*spotify.Profile, error) {
-	var profile spotify.Profile
+func (storage *Storage) GetProfileWithEmail(email string) (*domain.Profile, error) {
+	var profile domain.Profile
 	collection := storage.database.Collection(os.Getenv("MONGODB_PROFILE_COLLECTION"))
 	findErr := collection.FindOne(context.TODO(), map[string]string{"email": email}).Decode(&profile)
 	if findErr != nil {
@@ -76,8 +76,8 @@ func (storage *Storage) GetProfileWithEmail(email string) (*spotify.Profile, err
 }
 
 // CreateProfile - create profile func
-func (storage *Storage) CreateOrUpdateProfile(profile spotify.Profile) (*spotify.Profile, error) {
-	var profileContainer spotify.Profile
+func (storage *Storage) CreateOrUpdateProfile(profile domain.Profile) (*domain.Profile, error) {
+	var profileContainer domain.Profile
 	collection := storage.database.Collection(os.Getenv("MONGODB_PROFILE_COLLECTION"))
 	err := collection.FindOne(context.TODO(), map[string]string{"email": profile.Email}).Decode(&profileContainer)
 	if err != mongo.ErrNoDocuments {
@@ -101,8 +101,8 @@ func (storage *Storage) CreateOrUpdateProfile(profile spotify.Profile) (*spotify
 	return &profile, createError
 }
 
-func (storage *Storage) UpdateCredentials(email string, credentials *spotify.Credentials) (*spotify.Profile, error) {
-	var profileContainer spotify.Profile
+func (storage *Storage) UpdateCredentials(email string, credentials *domain.Credentials) (*domain.Profile, error) {
+	var profileContainer domain.Profile
 	collection := storage.database.Collection(os.Getenv("MONGODB_PROFILE_COLLECTION"))
 	updateParams := map[string]interface{}{
 		"updated_at":               time.Now(),

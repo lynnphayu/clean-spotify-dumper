@@ -1,4 +1,4 @@
-package spotify
+package domain
 
 import (
 	"time"
@@ -8,16 +8,17 @@ import (
 
 // Profile Interface
 type Profile struct {
-	ID              primitive.ObjectID `bson:"_id,omitempty"`
-	CreatedAt       time.Time          `bson:"created_at,omitempty"`
-	UpdatedAt       time.Time          `bson:"updated_at,omitempty"`
-	Country         string             `bson:"country" json:"country"`
-	DisplayName     string             `bson:"display_name" json:"display_name"`
-	Email           string             `bson:"email" json:"email"`
-	Product         string             `bson:"product" json:"product"`
-	Type            string             `bson:"type" json:"type"`
-	URI             string             `bson:"uri" json:"uri"`
-	Credentials     Credentials        `bson:"credentials" json:"credentials"`
+	ID primitive.ObjectID `bson:"_id,omitempty"`
+	// ID              string      `bson:"_id,omitempty"`
+	CreatedAt       time.Time   `bson:"created_at,omitempty"`
+	UpdatedAt       time.Time   `bson:"updated_at,omitempty"`
+	Country         string      `bson:"country" json:"country"`
+	DisplayName     string      `bson:"display_name" json:"display_name"`
+	Email           string      `bson:"email" json:"email"`
+	Product         string      `bson:"product" json:"product"`
+	Type            string      `bson:"type" json:"type"`
+	URI             string      `bson:"uri" json:"uri"`
+	Credentials     Credentials `bson:"credentials" json:"credentials"`
 	ExplicitContent struct {
 		FilerEnabled bool `bson:"filter_enabled" json:"filter_enabled"`
 		FilterLocked bool `bson:"filter_locked" json:"filter_blocked"`

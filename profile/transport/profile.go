@@ -1,4 +1,4 @@
-package endpoint
+package transport
 
 import (
 	"time"
